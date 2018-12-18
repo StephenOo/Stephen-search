@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>360-search</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js">
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<style>
+		*{
+			margin: 0;padding: 0;
+		}
+		.active{
+			background-color: #cfe6ff;
+		}
+	</style>
+	<script>
+		window.onload = function() {
+			new Vue({
+				el: "#box",
+				data: {
+					myData: [],
+					t1:'',
+					nowActive: -1, 			
+				},
+				methods: {
+					get(ev){
+						//alert(1);
+						if(ev.keyCode == 38 || ev.keyCode == 40) return;
+						if(ev.keyCode == 13) this.search();
+						$.ajax({
+							url: "http://www.sogou.com/suggnew/ajajjson",
+							type: "GET",
+							dataType: "jsonp",
+							context: this, // 把vue实例传过去或者使用箭头函数
+							jsonp: "m",
+							data:{
+								type:'web',
+								key: this.t1
+							},
+							success: function(res){
+								this.myData = res[1];
+							},
+							error:function(err){
+								console.log(err);
+							}
+						})
+					},
+					changeDown:function(){
+						this.nowActive ++;
+						if(this.nowActive == this.myData.length) this.nowActive=-1;
+						this.t1 = this.myData[this.nowActive];
+					},
+					changeUp:function(){
+						this.nowActive --;
+						if(this.nowActive == -2) this.nowActive=this.myData.length-1;
+						this.t1 = this.myData[this.nowActive];
+					},
+					search(){
+						window.open('https://www.sogou.com/tx?query='+ this.t1)
+					}
+				}
+			})
+		}
+	</script>
+</head>
+<body>
+	<div class="container text-center" id="box">
+		<div class="text-info" style="text-align:center;font-size:20px;line-height:200px;height:200px;">
+			StephenO_o
+		</div>
+		<div class="input-group text-center" style="width:50%; left: 25%;">
+			<input type="text" class="form-control" v-model="t1" @keyup="get($event)" @keydown.down="changeDown()" @keydown.up.prevent="changeUp()">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-primary" @click="search()">Search!</button>
+			</span>	
+		</div>
+		<ul style="list-style:none;width:50%;left:25%;position:relative;box-shadow:0 3px 3px #ccc; top: 2px;">
+			<li @click="t1=myData[index]" @mouseover="nowActive=index" style="cursor:pointer;padding-left:5px;" class="text-left" style="padding-left:10px;" :class="{active:index==nowActive}" v-for="(item, index) of myData">{{item}}</li>
+		</ul>
+		<p class="text-info" v-show="myData.length == 0">暂无数据...</p>
+	</div>
+</body>
+</html>
